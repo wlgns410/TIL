@@ -17,6 +17,7 @@ while start <= end:
     for i in range(n):
         cnt += mid // lst[i]
 
+    # m보다 적은 인원을 심사하면 안되므로 범위만 줄임
     if cnt < m :
         start = mid + 1
     else:
