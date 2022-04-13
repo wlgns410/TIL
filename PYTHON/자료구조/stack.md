@@ -286,12 +286,9 @@ class LinkedList(Generic[T]):
 
 
 
-class Stack(LinkedList[T], Generic[T]):
+class Queue(LinkedList[T], Generic[T]):
+    def enqueue(self, item: T) -> None:
 
-    # 자식 클래스가 부모 클래스를 상속받았으니, 생성자를 또 생성할 필요가 없음
-    # def __init__(self):
-
-    def push(self, item: T) -> None:
         new_node: Node[T] = Node[T](item=item)
         if self.head is None:
             self.head = new_node
@@ -304,58 +301,38 @@ class Stack(LinkedList[T], Generic[T]):
 
         current_node.pointer = new_node # 맨 마지막에 와서 새로운 노드를 넣어주면, 마지막에 노드를 넣는 것이 됨
 
-    def pop(self) -> T:
-        # node가 1개밖에 없을 때
+    # 큐는 맨앞에 있는 것 제거시켜주면 됨
+    def dequeue(self) -> T:
         if self.head is None:
-            raise ValueError("stack is empty")
-        else:
-            current_node = self.head
+            raise ValueError("queue is empty")
+        current_node = self.head
 
+        #  현재 노드가 첫번째라면
         if current_node.pointer is None:
             self.head = None
             return current_node.item
-        
-        # 현재 노드의 포인터의 포인터가 마지막일 때
-        while current_node.pointer.pointer is not None:
-            current_node = current_node.pointer
 
-        # 마지막 노드의 바로 직전
-        result = current_node.pointer
-
-        # 맨 마지막 제거
-        current_node.pointer = None
-        return result.item
-
+        result = current_node.item
+        self.head = current_node.pointer
+        return result
 
 # 유닛테스트
 if __name__ == "__main__":
-    stack = Stack[int]()
-    stack.push(1)
-    stack.push(2)
-    stack.push(3)
-    stack.push(4)
+    queue = Queue[int]()
+    queue.enqueue(1)
+    queue.enqueue(2)
+    queue.enqueue(3)
+    queue.enqueue(4)
 
-    print(stack.pop())
-    print(stack.pop())
-    print(stack.pop())
-    print(stack.pop())
-    print(stack.pop())
+    queue.dequeue() # 앞에 있는 1이 빠져나가는 것
 
-
-    print(stack.length)
-    print(stack)
+    print(queue.length)
+    print(queue)
 
 ```
 
 ```
-4
-3
-2
-1
-Traceback (most recent call last):
-  File "/Users/jihoon/project/python-class/stack.py", line 188, in <module>
-    print(stack.pop())
-  File "/Users/jihoon/project/python-class/stack.py", line 156, in pop
-    raise ValueError("stack is empty")
-ValueError: stack is empty
+count :  3
+None
+2, 3, 4
 ```
