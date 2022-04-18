@@ -351,3 +351,158 @@ INFO:     127.0.0.1:54938 - "GET /search HTTP/1.1" 422 Unprocessable Entity
 이 인자를 `return templates.TemplateResponse("./index.html", {"request": request, "keyword":q})`처럼 컨텍스트에 넣어서 response로 보내준다.  
 그럼 컨텍스트에서 `키`값을 받아서 template에서 렌더링하게 되는 것이다.  
 
+<br>
+
+# MySQL 연결하기
+
+mysql을 연결해보자.  
+
+<br>
+
+구조
+
+```
+fastapi 
+   -> app
+      -> models
+        -> __init__.py
+      -> main.py
+      -> config.py
+   server.py
+   requirements.py
+
+```
+
+<br>
+
+디비 관련된 코드를 따로 관리하기 위해서 models라는 폴더를 팠다.  
+거기서 생성자인 init.py 를 이용해 models를 import하면 맨 처음 초기화되게 했다. -> 폴더(디렉터리)가 패키지로 인식되도록 했다.  
+
+<br>
+
+```
+from sqlalchemy import create_engine, MetaData
+from app.config import MYSQL_URL
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+
+db_engine = create_engine(MYSQL_URL)
+db_metadata = MetaData()
+
+print("디비 연결 됨")
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=db_engine)
+
+Base = declarative_base()
+```
+
+<br>
+
+해당코드는 공식문서를 참조했다.  
+DB session을 가져오는 코드인데, DB를 구동시키고 나서 세션을 가져오는거니까  
+코드가 똑같은거다.  
+디비를 만들고, sessionmaker로 세션을 만든다는 간단한 코드이다.  
+
+
+<br>
+
+`MYSQL_URL`은 config.py에 감추고 싶은 코드를 작성해놨다.
+
+```
+# config.py
+import json
+from pathlib import Path
+from typing import Optional
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def get_secret(
+    key: str,
+    default_value: Optional[str] = None,
+    json_path: str = str(BASE_DIR / "secret.json"),
+):
+    with open(json_path) as f:
+        secrets = json.loads(f.read())
+    try:
+        return secrets[key]
+
+    except KeyError:
+        if default_value:
+            return default_value
+
+        raise EnvironmentError(f"Set the {key} environment variable.")
+
+
+MYSQL_DB_NAME = get_secret("MYSQL_DB_NAME")
+MYSQL_URL = get_secret("MYSQL_URL")
+NAVER_API_ID = get_secret("NAVER_API_ID")
+NAVER_API_CECRET = get_secret("NAVER_API_CECRET")
+
+if __name__ == "__main__":
+    world = get_secret("hello")
+    print(world)
+```
+
+<br>
+
+
+이제 이 코드로 서버를 구동시킨다.
+
+<br>
+
+```
+# main.py
+
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from pathlib import Path
+from app.models import db_metadata, db_engine, SessionLocal
+
+
+@app.on_event("startup")
+async def on_app_start():
+    print("hello server")
+    db_engine.connect()
+    
+
+
+@app.on_event("shutdown")
+async def on_app_shutdown():
+    db = SessionLocal()
+    db.close()
+    print("디비 닫힘")
+```
+
+작성한 db_engine을 model의 __init__.py에서 가져온다.  
+그리고 db 연결할 때는 connect() 메서드를  
+닫을 때는 `SessionLocal`을 객체로 만들어서 close 메서드를 사용한다.  
+
+<br>
+
+```
+INFO:     Will watch for changes in these directories: ['/Users/jihoon/project/python/fastapi']
+INFO:     Uvicorn running on http://localhost:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [67580] using statreload
+디비 연결 됨
+INFO:     Started server process [67582]
+INFO:     Waiting for application startup.
+hello server
+INFO:     Application startup complete.
+^CINFO:     Shutting down
+INFO:     Waiting for application shutdown.
+디비 닫힘
+INFO:     Application shutdown complete.
+INFO:     Finished server process [67582]
+INFO:     Stopping reloader process [67580]
+```
+
+<br>
+
+기본 세팅 완료.  
+이제 토이 프로젝트를 시작해보자.  
+
+<br>
+
