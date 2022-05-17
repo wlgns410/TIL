@@ -24,5 +24,18 @@
 root 계정을 mfa 세팅했다면, iam 계정도 mfa 2차 인증을 해야 aws 서비스에 엑세스가 가능해진다.  
 이거 안하면 아무리 PowerUserAccess 든, Administrator든 설정해도 아무 소용없다. 
 
+<br>
+
+-----
+
+추가
+
+iam 계정에 대한 mfa 세팅을 하기 위해서는 google otp 로 6자리 인증코드를 2번 받아서 입력해야한다.  
+그리고 나서 전환인증을 해야하는데, iam 사용자에 나와있는 전환 주소를 iam 로그인 한 뒤,  
+주소창에 입력해서 전환을 해야 iam에서 모든 권한이 사용 가능해진다.  
+
+<br>
+
+- [상세히 나와있어서 참고](https://linuxer.name/2022/05/%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C%EB%A5%BC-%EC%8B%9C%EC%9E%91%ED%95%98%EB%8A%94-%EC%82%AC%EB%9E%8C%EC%9D%84-%EC%9C%84%ED%95%9C-%EC%95%88%EB%82%B4%EC%84%9C/)
 
 <br>
